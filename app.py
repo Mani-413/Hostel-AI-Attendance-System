@@ -11,6 +11,8 @@ import sys
 import qrcode
 import socket
 
+IS_VERCEL = "VERCEL" in os.environ
+
 def get_ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
@@ -23,6 +25,8 @@ def get_ip():
     return IP
 
 def generate_qr():
+    if IS_VERCEL:
+        return
     ip = get_ip()
     url = f"http://{ip}:5000"
     qr = qrcode.make(url)
@@ -30,7 +34,10 @@ def generate_qr():
     # Use absolute path to static folder
     static_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "static"))
     if not os.path.exists(static_dir):
-        os.makedirs(static_dir)
+        try:
+            os.makedirs(static_dir)
+        except Exception:
+            return
         
     qr_path = os.path.join(static_dir, "qrcode.png")
     qr.save(qr_path)
@@ -58,20 +65,29 @@ DATASET_DIR = "dataset"
 LATE_CUTOFF_HOUR = 11
 
 # --- Setup Logging ---
-if not os.path.exists("logs"):
-    os.makedirs("logs")
+if not IS_VERCEL:
+    try:
+        if not os.path.exists("logs"):
+            os.makedirs("logs")
+    except Exception:
+        pass
 
 logger = logging.getLogger("AppLogger")
 logger.setLevel(logging.DEBUG)
-file_handler = logging.FileHandler('logs/app.log')
-file_handler.setLevel(logging.INFO)
 stream_handler = logging.StreamHandler()
 stream_handler.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-file_handler.setFormatter(formatter)
 stream_handler.setFormatter(formatter)
-logger.addHandler(file_handler)
 logger.addHandler(stream_handler)
+
+if not IS_VERCEL:
+    try:
+        file_handler = logging.FileHandler('logs/app.log')
+        file_handler.setLevel(logging.INFO)
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+    except Exception:
+        pass
 
 # --- Initialize Globals ---
 db = ExcelHandler()
@@ -168,6 +184,11 @@ def download_attendance():
     return send_file(db.ATTENDANCE_FILE, as_attachment=True)
 
 def generate_frames():
+    if IS_VERCEL:
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + b'Camera not available on cloud' + b'\r\n')
+        return
+
     try:
         camera = cv2.VideoCapture(0)
         while True:
