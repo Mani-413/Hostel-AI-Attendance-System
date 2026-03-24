@@ -15,6 +15,10 @@ class ExcelHandler:
         self._initialize_files()
 
     def _safe_write(self, df, filename):
+        if os.environ.get("VERCEL"):
+            self.logger.info(f"Vercel Mode: Skipping write to {filename}")
+            return True
+            
         for attempt in range(5):
             try:
                 df.to_excel(filename, index=False)

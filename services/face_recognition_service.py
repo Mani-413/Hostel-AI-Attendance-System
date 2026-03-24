@@ -24,10 +24,14 @@ class FaceRecognitionService:
         self.known_face_emails = []
         self.known_face_ids = []
         
-        if not os.path.exists(self.DEFAUT_DATASET_DIR):
-            os.makedirs(self.DEFAUT_DATASET_DIR)
+        if not os.environ.get("VERCEL"):
+            try:
+                if not os.path.exists(self.DEFAUT_DATASET_DIR):
+                    os.makedirs(self.DEFAUT_DATASET_DIR)
+            except Exception:
+                pass
             
-        self.load_known_faces()
+            self.load_known_faces()
 
     def load_known_faces(self):
         if not FACE_REC_AVAILABLE:
