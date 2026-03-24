@@ -12,13 +12,20 @@
                 <h2 class="text-2xl font-bold flex items-center gap-2 text-gray-800 dark:text-white">
                     <i class="ph-fill ph-camera text-primary"></i> Live Face Scan
                 </h2>
-                <div class="flex items-center gap-2 px-3 py-1 bg-green-500/10 border border-green-500/20 text-green-600 dark:text-green-400 rounded-full text-sm font-semibold shadow-inner">
+                <div id="camera-badge" class="flex items-center gap-2 px-3 py-1 bg-green-500/10 border border-green-500/20 text-green-600 dark:text-green-400 rounded-full text-sm font-semibold shadow-inner">
                     <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse mix-blend-screen"></span> Active
                 </div>
             </div>
             
-            <div class="relative rounded-xl overflow-hidden bg-black aspect-video border-[4px] border-gray-800 dark:border-gray-900 shadow-[0_0_20px_rgba(59,130,246,0.15)] group">
-                <img src="{{ url_for('video_feed') }}" class="w-full h-full object-cover">
+            <div class="relative rounded-xl overflow-hidden bg-black aspect-video border-[4px] border-gray-800 dark:border-gray-900 shadow-[0_0_20px_rgba(59,130,246,0.15)] group" id="camera-container">
+                <img src="{{ url_for('video_feed') }}" id="video-feed" class="w-full h-full object-cover">
+                
+                <!-- Placeholder for Vercel Cloud -->
+                <div id="cloud-placeholder" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-gray-900 text-gray-400 z-20">
+                    <i class="ph-fill ph-video-camera-slash text-6xl mb-4 opacity-50"></i>
+                    <h3 class="text-xl font-bold text-white mb-2">Camera Offline (Cloud Mode)</h3>
+                    <p class="text-sm px-8 text-center opacity-70">Live Face Scan is only available when running on your local Hostel PC or via Localtunnel.</p>
+                </div>
                 
                 <!-- Overlay scanning frame -->
                 <div class="absolute inset-0 pointer-events-none" style="background: linear-gradient(180deg, transparent 50%, rgba(59,130,246,0.08) 100%);"></div>
@@ -146,5 +153,18 @@
     setInterval(fetchAttendance, 2000);
     // Initial fetch
     setTimeout(fetchAttendance, 500);
+
+    // Detect Vercel and handle UI
+    if (window.location.hostname.includes('vercel.app')) {
+        document.getElementById('video-feed').classList.add('hidden');
+        document.getElementById('video-feed').src = '';
+        document.getElementById('cloud-placeholder').classList.remove('hidden');
+        
+        const badge = document.getElementById('camera-badge');
+        if(badge) {
+            badge.className = "flex items-center gap-2 px-3 py-1 bg-gray-500/10 border border-gray-500/20 text-gray-500 dark:text-gray-400 rounded-full text-sm font-semibold shadow-inner";
+            badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-gray-500 mix-blend-screen"></span> Offline';
+        }
+    }
 </script>
 {% endblock %}
