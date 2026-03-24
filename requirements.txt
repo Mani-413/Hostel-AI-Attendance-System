@@ -5,3 +5,5 @@ openpyxl
 opencv-python-headless
 numpy
 werkzeug
+qrcode
+pillow
