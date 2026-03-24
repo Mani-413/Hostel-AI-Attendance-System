@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="/static/manifest.json">
+    <title>AI Hostel Attendance</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        darkBg: '#0f172a',
+                        darkCard: '#1e293b'
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .light-glass { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(0,0,0,0.05); }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-darkBg text-gray-900 dark:text-gray-100 min-h-screen flex flex-col transition-colors duration-300 font-sans">
+
+    <!-- Navbar -->
+    <nav class="sticky top-0 z-50 glass" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-2">
+                    <i class="ph-fill ph-fingerprint text-3xl text-primary drop-shadow-[0_0_8px_rgba(59,130,246,0.6)]"></i>
+                    <span class="font-bold text-xl tracking-wide">Hostel<span class="text-primary font-extrabold">AI</span></span>
+                </div>
+                <div class="flex items-center gap-6 text-sm font-semibold">
+                    <a href="{{ url_for('index') }}" class="flex items-center hover:text-primary transition"><i class="ph ph-squares-four text-lg mr-1"></i> Dashboard</a>
+                    <a href="{{ url_for('students') }}" class="flex items-center hover:text-primary transition"><i class="ph ph-users text-lg mr-1"></i> Students</a>
+                    <a href="{{ url_for('attendance') }}" class="flex items-center hover:text-primary transition"><i class="ph ph-calendar-check text-lg mr-1"></i> Reports</a>
+                    <div class="h-6 border-l border-gray-300 dark:border-gray-700"></div>
+                    <button onclick="toggleDarkMode()" class="p-2 rounded-full bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 transition">
+                        <i class="ph ph-moon text-lg" id="theme-icon"></i>
+                    </button>
+                    <a href="{{ url_for('login') }}" class="flex items-center bg-primary/10 text-primary border border-primary/20 hover:bg-primary hover:text-white transition px-4 py-2 rounded-lg shadow-sm">
+                        <i class="ph ph-sign-in text-lg mr-1"></i> Admin Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="mb-6 space-y-2">
+                {% for msg in messages %}
+                    <div class="flex items-center bg-green-500/10 border border-green-500/20 text-green-600 dark:text-green-400 px-4 py-3 rounded-xl shadow-sm">
+                        <i class="ph-fill ph-check-circle text-xl mr-2"></i> {{ msg }}
+                    </div>
+                {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="animate-fade-in">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <footer class="border-t border-gray-200 dark:border-gray-800 py-6 text-center text-sm text-gray-500 font-medium">
+        &copy; 2026 HostelAI. Powered by Python & OpenCV.
+    </footer>
+
+    <script>
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            updateThemeUI(isDark);
+        }
+
+        function updateThemeUI(isDark) {
+            document.getElementById('theme-icon').className = isDark ? 'ph ph-sun text-lg text-yellow-500' : 'ph ph-moon text-lg text-indigo-500';
+            const nav = document.getElementById('navbar');
+            if (isDark) {
+                nav.classList.add('glass');
+                nav.classList.remove('light-glass');
+            } else {
+                nav.classList.add('light-glass');
+                nav.classList.remove('glass');
+            }
+        }
+
+        // Apply saved theme
+        if (localStorage.theme === 'light') {
+            document.documentElement.classList.remove('dark');
+            updateThemeUI(false);
+        } else {
+            document.documentElement.classList.add('dark');
+            updateThemeUI(true);
+        }
+    </script>
+    <style>
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+    </style>
+</body>
+</html>

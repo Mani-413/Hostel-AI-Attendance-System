@@ -1,0 +1,8 @@
+flask
+flask-cors
+pandas
+openpyxl
+opencv-python
+face-recognition
+numpy
+werkzeug

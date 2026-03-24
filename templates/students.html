@@ -1,0 +1,243 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="mb-8 border-b border-gray-200 dark:border-gray-800 pb-5">
+    <h1 class="text-3xl font-black flex items-center gap-2"><i class="ph-fill ph-users-three text-primary"></i> Directory Management</h1>
+    <p class="text-gray-500 font-medium">Add, view, and remove authenticated student profiles.</p>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    
+    <!-- Registration Form (Left Col) -->
+    <div class="lg:col-span-4">
+        <div class="bg-white dark:bg-darkCard rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 p-6 sticky top-24 relative overflow-hidden group">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform"></div>
+            
+            <h2 class="text-xl font-bold mb-6 flex items-center gap-2 relative z-10"><i class="ph-fill ph-user-plus text-primary"></i> Register Profile</h2>
+
+            <form action="{{ url_for('students') }}" method="POST" enctype="multipart/form-data" id="addForm" class="space-y-4 relative z-10">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Student ID</label>
+                    <input type="text" name="student_id" id="student_id" class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:border-primary font-mono text-sm leading-6" placeholder="B.Tech-CS-101" required>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
+                    <input type="text" name="name" id="name" class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:border-primary font-medium text-sm leading-6" placeholder="E.g. Elon Musk" required>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Email Address</label>
+                    <input type="email" name="email" id="email" class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg outline-none focus:border-primary font-mono text-sm leading-6" placeholder="E.g. student@college.edu">
+                </div>
+
+                <div class="pt-2">
+                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Face Data Source</label>
+                    
+                    <div class="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-lg mb-3">
+                        <button type="button" id="tab-btn-upload" class="flex-1 py-1.5 px-3 text-sm font-bold bg-white dark:bg-gray-700 shadow-sm rounded-md text-gray-800 dark:text-white transition" onclick="switchTab('upload')"><i class="ph-fill ph-folder-notch"></i> Upload File</button>
+                        <button type="button" id="tab-btn-webcam" class="flex-1 py-1.5 px-3 text-sm font-bold text-gray-500 hover:text-gray-800 dark:hover:text-white transition" onclick="switchTab('webcam')"><i class="ph-fill ph-camera-plus"></i> Webcam</button>
+                    </div>
+
+                    <!-- Upload tab -->
+                    <div id="tab-upload" class="animate-fade-in">
+                        <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-4 text-center hover:bg-gray-50 dark:hover:bg-gray-800 transition cursor-pointer relative">
+                            <i class="ph-fill ph-cloud-arrow-up text-3xl text-gray-400 mb-2"></i>
+                            <p class="text-xs text-gray-500 font-medium">Click to browse or drag image here.</p>
+                            <input type="file" name="image" id="fileInput" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/*" onchange="previewFile(event)">
+                        </div>
+                        <img id="preview" src="" class="mt-3 rounded-lg mx-auto border-2 border-primary hidden w-32 h-32 object-cover shadow-lg">
+                    </div>
+
+                    <!-- Webcam tab -->
+                    <div id="tab-webcam" class="hidden animate-fade-in text-center">
+                        <div class="bg-black rounded-xl overflow-hidden mb-3 relative aspect-[4/3] border-2 border-gray-200 dark:border-gray-700">
+                            <video id="webcamVideo" class="w-full h-full object-cover hidden" autoplay playsinline></video>
+                            <canvas id="webcamCanvas" class="hidden"></canvas>
+                            <img id="capturedPreview" src="" class="w-full h-full object-cover hidden">
+                            <div id="cam-placeholder" class="absolute inset-0 flex flex-col items-center justify-center text-gray-500">
+                                <i class="ph ph-video-camera text-4xl mb-2 opacity-50"></i>
+                                <span class="text-xs font-semibold uppercase tracking-wider">Camera Ready</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex gap-2 justify-center">
+                            <button type="button" id="camStartBtn" class="px-4 py-1.5 bg-gray-600 hover:bg-gray-700 text-white rounded-lg text-sm font-bold transition flex items-center gap-1" onclick="startWebcam()"><i class="ph-bold ph-play"></i> Start</button>
+                            <button type="button" id="captureBtn" class="hidden px-4 py-1.5 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-bold transition flex items-center gap-1 shadow-[0_0_10px_rgba(34,197,94,0.4)]" onclick="capturePhoto()"><i class="ph-fill ph-aperture"></i> Capture</button>
+                            <button type="button" id="retakeBtn" class="hidden px-4 py-1.5 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg text-sm font-bold transition flex items-center gap-1" onclick="retakePhoto()"><i class="ph-bold ph-arrows-counter-clockwise"></i> Retake</button>
+                        </div>
+                        <input type="hidden" name="webcam_image" id="webcamImageData">
+                    </div>
+                </div>
+
+                <div class="pt-4">
+                    <button type="submit" class="w-full py-3 bg-primary hover:bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-500/30 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
+                        <i class="ph-bold ph-floppy-disk"></i> Register Profile
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Student List Table (Right Col) -->
+    <div class="lg:col-span-8">
+        <div class="bg-white dark:bg-darkCard rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 p-6 overflow-hidden flex flex-col h-full min-h-[500px]">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold flex items-center gap-2"><i class="ph-fill ph-address-book text-primary"></i> Master Roster</h2>
+                <div class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-lg text-sm font-bold text-gray-600 dark:text-gray-400">Total: {{ students|length }}</div>
+            </div>
+
+            <div class="flex-grow overflow-x-auto relative">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50 dark:bg-gray-800/80 border-b border-gray-200 dark:border-gray-700 text-xs uppercase tracking-wider text-gray-500 font-bold sticky top-0 z-10 backdrop-blur-md shadow-sm">
+                            <th class="p-4 rounded-tl-lg">Face</th>
+                            <th class="p-4">Student ID / Enrolment #</th>
+                            <th class="p-4">Full Name</th>
+                            <th class="p-4">Email Address</th>
+                            <th class="p-4 rounded-tr-lg text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 dark:divide-gray-800/50">
+                        {% for student in students %}
+                        <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30 transition-colors group">
+                            <td class="p-3">
+                                <div class="relative w-12 h-12">
+                                    <div class="absolute inset-0 rounded-full border border-gray-200 dark:border-gray-700 border-dashed animate-[spin_10s_linear_infinite] group-hover:border-primary"></div>
+                                    <img src="/dataset_img/{{ student['Student ID'] }}.jpg"
+                                         onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name=Student&bold=true&background=random'"
+                                         class="w-10 h-10 m-1 rounded-full object-cover border-2 border-white dark:border-gray-800 shadow-sm transition-transform group-hover:scale-110">
+                                </div>
+                            </td>
+                            <td class="p-4 font-mono text-sm font-bold text-gray-700 dark:text-gray-300">
+                                <span class="bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-primary border border-transparent group-hover:border-primary/20 transition">{{ student['Student ID'] }}</span>
+                            </td>
+                            <td class="p-4 font-bold text-gray-900 dark:text-white tracking-wide">
+                                {{ student['Name'] }}
+                            </td>
+                            <td class="p-4 font-mono text-sm text-gray-600 dark:text-gray-400">
+                                {% if student.get('Email') and student.get('Email')|string != 'nan' %}
+                                    <a href="mailto:{{ student.get('Email') }}" class="hover:text-primary transition"><i class="ph ph-envelope-simple mr-1"></i>{{ student.get('Email') }}</a>
+                                {% else %}
+                                    <span class="opacity-50 text-xs border border-gray-200 dark:border-gray-700 px-2 py-0.5 rounded-md">Not Provided</span>
+                                {% endif %}
+                            </td>
+                            <td class="p-4 text-right">
+                                <a href="{{ url_for('delete_student', sid=student['Student ID']) }}"
+                                   data-name="{{ student['Name'] }}"
+                                   onclick="return confirm('🛑 Are you sure you want to permanently delete ' + this.dataset.name + ' and their face data? This action cannot be undone.')"
+                                   class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-500 hover:text-white dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-600 dark:hover:text-white rounded-lg text-xs font-bold transition-all shadow-sm">
+                                   <i class="ph-bold ph-trash"></i> Remove
+                                </a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="p-16 text-center text-gray-500">
+                                <div class="flex flex-col items-center justify-center opacity-70">
+                                    <i class="ph-fill ph-users-three text-6xl mb-3 text-gray-300 dark:text-gray-600"></i>
+                                    <p class="font-bold text-lg">No Students Registered</p>
+                                    <p class="text-sm font-medium mt-1">Use the panel on the left to add a profile.</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let stream = null;
+let activeTab = 'upload';
+
+function switchTab(tab) {
+    activeTab = tab;
+    // Toggles
+    document.getElementById('tab-upload').classList.toggle('hidden', tab !== 'upload');
+    document.getElementById('tab-webcam').classList.toggle('hidden', tab !== 'webcam');
+    
+    // Style buttons
+    const upBtn = document.getElementById('tab-btn-upload');
+    const camBtn = document.getElementById('tab-btn-webcam');
+    
+    if(tab === 'upload') {
+        upBtn.className = 'flex-1 py-1.5 px-3 text-sm font-bold bg-white dark:bg-gray-700 shadow-sm rounded-md text-gray-800 dark:text-white transition';
+        camBtn.className = 'flex-1 py-1.5 px-3 text-sm font-bold text-gray-500 hover:text-gray-800 dark:hover:text-white transition';
+        stopWebcam();
+    } else {
+        camBtn.className = 'flex-1 py-1.5 px-3 text-sm font-bold bg-white dark:bg-gray-700 shadow-sm rounded-md text-gray-800 dark:text-white transition';
+        upBtn.className = 'flex-1 py-1.5 px-3 text-sm font-bold text-gray-500 hover:text-gray-800 dark:hover:text-white transition';
+    }
+}
+
+function previewFile(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+        const img = document.getElementById('preview');
+        img.src = ev.target.result;
+        img.classList.remove('hidden');
+    };
+    reader.readAsDataURL(file);
+}
+
+function startWebcam() {
+    navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } })
+        .then(s => {
+            stream = s;
+            const v = document.getElementById('webcamVideo');
+            v.srcObject = s;
+            v.classList.remove('hidden');
+            document.getElementById('cam-placeholder').classList.add('hidden');
+            document.getElementById('camStartBtn').classList.add('hidden');
+            document.getElementById('captureBtn').classList.remove('hidden');
+        })
+        .catch(e => alert('Camera access denied!'));
+}
+
+function capturePhoto() {
+    const v = document.getElementById('webcamVideo');
+    const c = document.getElementById('webcamCanvas');
+    c.width = v.videoWidth;
+    c.height = v.videoHeight;
+    c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
+    const data = c.toDataURL('image/jpeg', 0.95);
+    
+    document.getElementById('webcamImageData').value = data;
+    const preview = document.getElementById('capturedPreview');
+    preview.src = data;
+    preview.classList.remove('hidden');
+    
+    v.classList.add('hidden');
+    document.getElementById('captureBtn').classList.add('hidden');
+    document.getElementById('retakeBtn').classList.remove('hidden');
+    stopWebcam();
+}
+
+function retakePhoto() {
+    document.getElementById('capturedPreview').classList.add('hidden');
+    document.getElementById('retakeBtn').classList.add('hidden');
+    document.getElementById('webcamImageData').value = '';
+    startWebcam();
+}
+
+function stopWebcam() {
+    if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+}
+
+document.getElementById('addForm').addEventListener('submit', function(e) {
+    const fileInput = document.getElementById('fileInput');
+    const webcamData = document.getElementById('webcamImageData').value;
+    if (activeTab === 'upload' && (!fileInput.files || fileInput.files.length === 0)) {
+        e.preventDefault(); alert('⚠️ Please upload an image file!'); return;
+    }
+    if (activeTab === 'webcam' && !webcamData) {
+        e.preventDefault(); alert('⚠️ Please capture a photo using the webcam!'); return;
+    }
+});
+</script>
+{% endblock %}

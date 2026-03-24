@@ -1,0 +1,43 @@
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment files
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Project specifics
+logs/
+qrcode.png  # Generated per session
+*.log
+*.sqlite
+*.db
+
+# Build artifacts (PyInstaller)
+build/
+dist/
+*.spec
+Hostel_Attendance_AI.exe
+
+# IDE files
+.vscode/
+.idea/
+.pyre/
+.pyre_configuration
+
+# Large data (optional to ignore, but we keep the files to make it works)
+# If you want to push without students, uncomment these:
+# dataset/*.jpg
+# dataset/*.jpeg
+# dataset/*.png
+
+# Keep templates/static/services
+!services/**
+!templates/**
+!static/**
