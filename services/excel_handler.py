@@ -61,6 +61,8 @@ class ExcelHandler:
 
     def get_all_students(self):
         try:
+            if not os.path.exists(self.STUDENTS_FILE):
+                return []
             return pd.read_excel(self.STUDENTS_FILE).to_dict('records')
         except Exception as e:
             self.logger.error(f"Error reading {self.STUDENTS_FILE}: {str(e)}")
@@ -110,6 +112,8 @@ class ExcelHandler:
 
     def verify_user(self, username, password):
         try:
+            if not os.path.exists(self.USERS_FILE):
+                return False
             df = pd.read_excel(self.USERS_FILE)
             match = df[(df['Username'] == str(username)) & (df['Password'] == str(password))]
             return not match.empty
@@ -143,7 +147,11 @@ class ExcelHandler:
         student_id = str(student_id).split(".")[0].strip()
         
         try:
-            df = pd.read_excel(self.ATTENDANCE_FILE)
+            if not os.path.exists(self.ATTENDANCE_FILE):
+                df = pd.DataFrame(columns=["Date", "Student ID", "Name", "Time", "Status"])
+            else:
+                df = pd.read_excel(self.ATTENDANCE_FILE)
+            
             if not df.empty:
                 df['Student ID'] = df['Student ID'].apply(lambda x: str(x).split(".")[0].strip())
             
@@ -172,6 +180,8 @@ class ExcelHandler:
         from datetime import datetime
         today = datetime.now().strftime("%Y-%m-%d")
         try:
+            if not os.path.exists(self.ATTENDANCE_FILE):
+                return []
             df = pd.read_excel(self.ATTENDANCE_FILE)
             if df.empty: return []
             df['Date'] = df['Date'].astype(str)
@@ -185,6 +195,8 @@ class ExcelHandler:
 
     def get_all_attendance(self):
         try:
+            if not os.path.exists(self.ATTENDANCE_FILE):
+                return []
             df = pd.read_excel(self.ATTENDANCE_FILE)
             df = df.where(pd.notnull(df), None)
             return df.to_dict('records')
